@@ -56,7 +56,7 @@ function plugin_version_workflows() {
       'homepage'       => '',
       'requirements'   => [
          'glpi' => [
-            'min' => '9.2',
+            'min' => '9.3',
          ]
       ]
    ];
