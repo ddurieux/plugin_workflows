@@ -36,8 +36,11 @@ define('PLUGIN_WORKFLOWS_VERSION', '0.0.1');
  */
 function plugin_init_workflows() {
    global $PLUGIN_HOOKS;
-
+   $plugin = new Plugin();
    $PLUGIN_HOOKS['csrf_compliant']['workflows'] = true;
+   if ($plugin->isInstalled('workflows') && $plugin->isActivated('workflows')) {
+      $PLUGIN_HOOKS["menu_toadd"]['workflows']['config'] ='PluginWorkflowsWorkflow';
+   }
 }
 
 
@@ -51,7 +54,7 @@ function plugin_version_workflows() {
    return [
       'name'           => 'workflows',
       'version'        => PLUGIN_WORKFLOWS_VERSION,
-      'author'         => '<a href="http://www.teclib.com">Teclib\'</a>',
+      'author'         => 'Jessica DUDON',
       'license'        => '',
       'homepage'       => '',
       'requirements'   => [
