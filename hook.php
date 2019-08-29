@@ -34,57 +34,52 @@
 function plugin_workflows_install() {
    global $DB;
 
-
-if (!$DB->TableExists("glpi_plugin_workflows_workflows")) {
-
-   $DB->query ("CREATE TABLE `glpi_plugin_workflows_workflows` (
-               `id` int(11) NOT NULL AUTO_INCREMENT,
-               `entities_id` int(11) NOT NULL default '0',
-               `name` varchar(255) NOT NULL,
-               PRIMARY KEY  (`id`),
-               KEY `entities_id` (`entities_id`)
-             ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
-}
-if (!$DB->TableExists("glpi_plugin_workflows_workflows_tasktemplates")) {
-
-   $DB->query ("CREATE TABLE `glpi_plugin_workflows_workflows_tasktemplates` (
-               `id` int(11) NOT NULL  AUTO_INCREMENT,
-               `name` varchar(255),
-               `level` int(11) NOT NULL,
-               `completename` text,
-               `workflows_tasktemplates_id` int(11) NOT NULL default '0',
-               `workflows_id` int(11) NOT NULL default '0',
-               `tasktemplates_id` int(11) NOT NULL default '0',
-               `isvalidated` bool default NOT NULL'0',
-               `needvalidation` bool,
-               PRIMARY KEY (`id`),
-               KEY `plugin_workflows_workflows_tasktemplates_id` (`workflows_tasktemplates_id`), 
-               KEY `plugin_workflows_workflows_id` (`workflows_id`),
-               Key `tasktemplates_id` (`tasktemplates_id`)
-             ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
-}
-if (!$DB->TableExists("glpi_plugin_workflows_workflows_tickets")) {
-
-   $DB->query ("CREATE TABLE `glpi_plugin_workflows_workflows_tickets` (
-               `id` int(11) NOT NULL AUTO_INCREMENT,
-               `tickets_id` int(11) NOT NULL default '0',
-               `workflows_id` int(11) NOT NULL default '0',
-               PRIMARY KEY  (`id`),
-               KEY `tickets_id` (`tickets_id`),
-               KEY `plugin_workflows_workflows_id` (`workflows_id`)
-             ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
-}
-if (!$DB->TableExists("glpi_plugin_workflows_workflows_tasktemplates_tickettasks")) {
-
-   $DB->query ("CREATE TABLE `glpi_plugin_workflows_workflows_tasktemplates_tickettasks` (
-               `id` int(11) NOT NULL AUTO_INCREMENT,
-               `tickettasks_id` int(11) NOT NULL default '0',
-               `plugin_workflows_workflows_tasktemplates_id` int(11) NOT NULL default '0',
-               PRIMARY KEY  (`id`),
-               KEY `tickettasks_id` (`tickettasks_id`),
-               KEY `plugin_workflows_workflows_tasktemplates_id` (`tasktemplates_id`)
-             ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
-}
+   if (!$DB->TableExists("glpi_plugin_workflows_workflows")) {
+      $DB->query("CREATE TABLE `glpi_plugin_workflows_workflows` (
+                 `id` int(11) NOT NULL AUTO_INCREMENT,
+                 `entities_id` int(11) NOT NULL default '0',
+                 `name` varchar(255) NOT NULL,
+                 PRIMARY KEY  (`id`),
+                 KEY `entities_id` (`entities_id`)
+               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;");
+   }
+   if (!$DB->TableExists("glpi_plugin_workflows_workflows_tasktemplates")) {
+      $DB->query("CREATE TABLE `glpi_plugin_workflows_workflows_tasktemplates` (
+                 `id` int(11) NOT NULL  AUTO_INCREMENT,
+                 `name` varchar(255),
+                 `level` int(11) NOT NULL,
+                 `completename` text,
+                 `workflows_tasktemplates_id` int(11) NOT NULL default '0',
+                 `workflows_id` int(11) NOT NULL default '0',
+                 `tasktemplates_id` int(11) NOT NULL default '0',
+                 `isvalidated` bool default NOT NULL'0',
+                 `needvalidation` bool,
+                 PRIMARY KEY (`id`),
+                 KEY `plugin_workflows_workflows_tasktemplates_id` (`workflows_tasktemplates_id`), 
+                 KEY `plugin_workflows_workflows_id` (`workflows_id`),
+                 Key `tasktemplates_id` (`tasktemplates_id`)
+               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;");
+   }
+   if (!$DB->TableExists("glpi_plugin_workflows_workflows_tickets")) {
+      $DB->query("CREATE TABLE `glpi_plugin_workflows_workflows_tickets` (
+                 `id` int(11) NOT NULL AUTO_INCREMENT,
+                 `tickets_id` int(11) NOT NULL default '0',
+                 `workflows_id` int(11) NOT NULL default '0',
+                 PRIMARY KEY  (`id`),
+                 KEY `tickets_id` (`tickets_id`),
+                 KEY `plugin_workflows_workflows_id` (`workflows_id`)
+               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;");
+   }
+   if (!$DB->TableExists("glpi_plugin_workflows_workflows_tasktemplates_tickettasks")) {
+      $DB->query("CREATE TABLE `glpi_plugin_workflows_workflows_tasktemplates_tickettasks` (
+                 `id` int(11) NOT NULL AUTO_INCREMENT,
+                 `tickettasks_id` int(11) NOT NULL default '0',
+                 `plugin_workflows_workflows_tasktemplates_id` int(11) NOT NULL default '0',
+                 PRIMARY KEY  (`id`),
+                 KEY `tickettasks_id` (`tickettasks_id`),
+                 KEY `plugin_workflows_workflows_tasktemplates_id` (`tasktemplates_id`)
+               ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;");
+   }
    return true;
 }
 
@@ -99,6 +94,7 @@ function plugin_workflows_uninstall() {
    $DB->query("DROP TABLE IF EXISTS `glpi_plugin_workflows_workflows`;");
    $DB->query("DROP TABLE IF EXISTS `glpi_plugin_workflows_workflows_tasktemplates`;");
    $DB->query("DROP TABLE IF EXISTS `glpi_plugin_workflows_workflows_tickets`;");
+   $DB->query("DROP TABLE IF EXISTS `glpi_plugin_workflows_workflows_tasktemplates_tickettasks`;");
    return true;
 }
 
@@ -109,8 +105,5 @@ function plugin_workflows_update($ID) {
 
   $task->getID();
   
-   if(){
-
-  }
 }
 
