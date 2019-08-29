@@ -7,7 +7,7 @@ if (!defined('GLPI_ROOT')) {
 class PluginWorkflowsWorkflow extends CommonDBTM {
 
     static $doHistory = true;
-    static $rightname = 'computer';
+    static $rightname = 'ticket';
     
     static function getTypeName($nb = 0) {
         return _n('Tasks Workflow', 'Tasks Workflows', $nb, 'workflow');
@@ -23,13 +23,34 @@ class PluginWorkflowsWorkflow extends CommonDBTM {
 
     $ong = [];
     $this->addDefaultFormTab($ong);
+    $ong[$this->getType().'$tasktemplates'] = self::createTabEntry("task");
     $this->addStandardTab('Log', $ong, $options);
 
     return $ong;
  }
 
+    static function displayTabContentForItem(\CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
+    {
+
+            $tasktemplates = new PluginWorkflowsWorkflow_tasktemplate;
+            echo "<table>";
+            echo "<tr>";
+            echo "<td align='center'>";
+            $tasktemplates->showTasksWorkflow($item->getID());
+            echo "</td>";
+            echo "<td>";
+            $tasktemplates->showForm($item->getID());
+            echo "</td>";
+            echo "</tr>";
+            echo "</table>";
+
+        return true;  
+    }
+
+
     function showForm($ID, $options = []) {
         global $CFG_GLPI;
+
         $this->initForm($ID, $options);
         $this->showFormHeader($options);
 
@@ -39,7 +60,6 @@ class PluginWorkflowsWorkflow extends CommonDBTM {
         Html::autocompletionTextField($this, 'name', ['value' => $this->fields['name']]);
         echo "</td>";
         echo "</tr>";
-
 
         $this->showFormButtons($options);
         $this->canCreateItem();

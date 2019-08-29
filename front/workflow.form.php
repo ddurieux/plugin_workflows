@@ -17,7 +17,7 @@ $_SERVER["PHP_SELF"],
     $workflow->check(-1, CREATE, $_POST);
     $newid = $workflow->add($_POST);
     //Redirect to newly created object form
-    Html::back;
+    Html::back();
  } else if (isset($_POST['update'])) {
     //Check UPDATE ACL
     $workflow->check($_POST['id'], UPDATE);

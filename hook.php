@@ -55,6 +55,8 @@ if (!$DB->TableExists("glpi_plugin_workflows_workflows_tasktemplates")) {
                `workflows_tasktemplates_id` int(11) NOT NULL default '0',
                `workflows_id` int(11) NOT NULL default '0',
                `tasktemplates_id` int(11) NOT NULL default '0',
+               `isvalidated` bool default NOT NULL'0',
+               `needvalidation` bool,
                PRIMARY KEY (`id`),
                KEY `plugin_workflows_workflows_tasktemplates_id` (`workflows_tasktemplates_id`), 
                KEY `plugin_workflows_workflows_id` (`workflows_id`),
@@ -72,6 +74,17 @@ if (!$DB->TableExists("glpi_plugin_workflows_workflows_tickets")) {
                KEY `plugin_workflows_workflows_id` (`workflows_id`)
              ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
 }
+if (!$DB->TableExists("glpi_plugin_workflows_workflows_tasktemplates_tickettasks")) {
+
+   $DB->query ("CREATE TABLE `glpi_plugin_workflows_workflows_tasktemplates_tickettasks` (
+               `id` int(11) NOT NULL AUTO_INCREMENT,
+               `tickettasks_id` int(11) NOT NULL default '0',
+               `plugin_workflows_workflows_tasktemplates_id` int(11) NOT NULL default '0',
+               PRIMARY KEY  (`id`),
+               KEY `tickettasks_id` (`tickettasks_id`),
+               KEY `plugin_workflows_workflows_tasktemplates_id` (`tasktemplates_id`)
+             ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
+}
    return true;
 }
 
@@ -87,5 +100,17 @@ function plugin_workflows_uninstall() {
    $DB->query("DROP TABLE IF EXISTS `glpi_plugin_workflows_workflows_tasktemplates`;");
    $DB->query("DROP TABLE IF EXISTS `glpi_plugin_workflows_workflows_tickets`;");
    return true;
+}
+
+function plugin_workflows_update($ID) {
+  $task = new TicketTask();
+  $ticket = new PluginWorkflowsWorkflow_ticket();
+  $workflow = new PluginWorkflowsWorkflow();
+
+  $task->getID();
+  
+   if(){
+
+  }
 }
 

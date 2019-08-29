@@ -38,6 +38,19 @@ function plugin_init_workflows() {
    global $PLUGIN_HOOKS;
    $plugin = new Plugin();
    $PLUGIN_HOOKS['csrf_compliant']['workflows'] = true;
+   $PLUGIN_HOOKS['add_javascript']['workflows'][] = 'node_modules/eve-raphael/eve.js';
+   $PLUGIN_HOOKS['add_javascript']['workflows'][] = 'node_modules/raphael/raphael.js';
+   $PLUGIN_HOOKS['add_javascript']['workflows'][] = 'node_modules/flowchart.js/release/flowchart.js';
+   $PLUGIN_HOOKS['item_update']['workflows'] =
+   ['TicketTask'         => 'plugin_workflows_update'];
+   
+   Plugin::registerClass('PluginWorkflowsWorkflow_ticket', [
+      'addtabon' => [
+         'Ticket'
+         ]
+      ]
+   );
+
    if ($plugin->isInstalled('workflows') && $plugin->isActivated('workflows')) {
       $PLUGIN_HOOKS["menu_toadd"]['workflows']['config'] ='PluginWorkflowsWorkflow';
    }
