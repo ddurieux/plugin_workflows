@@ -15,5 +15,4 @@ if (isset($_POST["delete"])) {
    Html::back();
 }
 
-
 include (GLPI_ROOT . "/front/dropdown.common.form.php");

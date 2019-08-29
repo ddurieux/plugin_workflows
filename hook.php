@@ -55,7 +55,7 @@ function plugin_workflows_install() {
                  `isvalidated` bool default NOT NULL'0',
                  `needvalidation` bool,
                  PRIMARY KEY (`id`),
-                 KEY `plugin_workflows_workflows_tasktemplates_id` (`workflows_tasktemplates_id`), 
+                 KEY `plugin_workflows_workflows_tasktemplates_id` (`workflows_tasktemplates_id`),
                  KEY `plugin_workflows_workflows_id` (`workflows_id`),
                  Key `tasktemplates_id` (`tasktemplates_id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;");
@@ -99,11 +99,10 @@ function plugin_workflows_uninstall() {
 }
 
 function plugin_workflows_update($ID) {
-  $task = new TicketTask();
-  $ticket = new PluginWorkflowsWorkflow_ticket();
-  $workflow = new PluginWorkflowsWorkflow();
+   $task = new TicketTask();
+   $ticket = new PluginWorkflowsWorkflow_ticket();
+   $workflow = new PluginWorkflowsWorkflow();
 
-  $task->getID();
-  
+   $task->getID();
 }
 

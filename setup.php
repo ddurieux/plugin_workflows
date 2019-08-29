@@ -44,7 +44,7 @@ function plugin_init_workflows() {
    $PLUGIN_HOOKS['item_update']['workflows'] = [
       'TicketTask' => 'plugin_workflows_update'
    ];
-   
+
    Plugin::registerClass('PluginWorkflowsWorkflow_ticket', [
       'addtabon' => [
          'Ticket'
