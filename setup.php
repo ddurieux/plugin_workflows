@@ -26,7 +26,7 @@
  --------------------------------------------------------------------------
  */
 
-define('PLUGIN_WORKFLOWS_VERSION', '0.0.1');
+define('PLUGIN_WORKFLOWS_VERSION', '9.4+1.0');
 
 /**
  * Init hooks of the plugin.
@@ -41,8 +41,9 @@ function plugin_init_workflows() {
    $PLUGIN_HOOKS['add_javascript']['workflows'][] = 'node_modules/eve-raphael/eve.js';
    $PLUGIN_HOOKS['add_javascript']['workflows'][] = 'node_modules/raphael/raphael.js';
    $PLUGIN_HOOKS['add_javascript']['workflows'][] = 'node_modules/flowchart.js/release/flowchart.js';
-   $PLUGIN_HOOKS['item_update']['workflows'] =
-   ['TicketTask'         => 'plugin_workflows_update'];
+   $PLUGIN_HOOKS['item_update']['workflows'] = [
+      'TicketTask' => 'plugin_workflows_update'
+   ];
    
    Plugin::registerClass('PluginWorkflowsWorkflow_ticket', [
       'addtabon' => [
@@ -67,12 +68,13 @@ function plugin_version_workflows() {
    return [
       'name'           => 'workflows',
       'version'        => PLUGIN_WORKFLOWS_VERSION,
-      'author'         => 'Jessica DUDON',
+      'author'         => 'Jessica DUDON && David DURIEUX',
       'license'        => '',
       'homepage'       => '',
       'requirements'   => [
          'glpi' => [
-            'min' => '9.3',
+            'min' => '9.4',
+            'max' => '9.5'
          ]
       ]
    ];
@@ -86,10 +88,9 @@ function plugin_version_workflows() {
  */
 function plugin_workflows_check_prerequisites() {
 
-   //Version check is not done by core in GLPI < 9.2 but has to be delegated to core in GLPI >= 9.2.
    $version = preg_replace('/^((\d+\.?)+).*$/', '$1', GLPI_VERSION);
-   if (version_compare($version, '9.2', '<')) {
-      echo "This plugin requires GLPI >= 9.2";
+   if (version_compare($version, '9.4', '<')) {
+      echo "This plugin requires GLPI >= 9.4";
       return false;
    }
    return true;
