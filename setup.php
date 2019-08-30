@@ -38,9 +38,11 @@ function plugin_init_workflows() {
    global $PLUGIN_HOOKS;
    $plugin = new Plugin();
    $PLUGIN_HOOKS['csrf_compliant']['workflows'] = true;
-   $PLUGIN_HOOKS['add_javascript']['workflows'][] = 'node_modules/eve-raphael/eve.js';
-   $PLUGIN_HOOKS['add_javascript']['workflows'][] = 'node_modules/raphael/raphael.js';
-   $PLUGIN_HOOKS['add_javascript']['workflows'][] = 'node_modules/flowchart.js/release/flowchart.js';
+
+   $PLUGIN_HOOKS['add_css']['workflows'] = [
+      "css/diagram.css"
+   ];
+
    $PLUGIN_HOOKS['item_update']['workflows'] = [
       'TicketTask' => 'plugin_workflows_update'
    ];

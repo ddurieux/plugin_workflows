@@ -17,10 +17,12 @@ class PluginWorkflowsWorkflow_tasktemplate extends CommonTreeDropdown {
 
 
    function showForm($ID, $options = []) {
-      $this->initForm(-1);
+
+      $this->initForm($ID);
       $this->showFormHeader();
       echo Html::hidden('plugin_workflows_workflows_id',
-      ['value' => $ID]);
+                        ['value' => $_GET['id']]);
+
       echo "<tr class='tasktemplate'>";
       echo "<td>".__('Tasktemplate')." :</td>";
       echo "<td align='center'>";
@@ -28,11 +30,11 @@ class PluginWorkflowsWorkflow_tasktemplate extends CommonTreeDropdown {
       echo "</td>";
       echo "</tr>";
       echo "<tr class='workflowtasktemplate'>";
-      echo "<td>".__('Workflow Tasktemplate')." :</td>";
+      echo "<td>".__('Parent')." :</td>";
       echo "<td align='center'>";
       PluginWorkflowsWorkflow_tasktemplate::dropdown([
          'name'  => 'plugin_workflows_workflows_tasktemplates_id',
-         'value' => ($ID != 0) ? $this->fields["plugin_workflows_workflows_tasktemplates_id"] : 0,
+         'value' => $this->fields["plugin_workflows_workflows_tasktemplates_id"],
       ]);
       echo "</td>";
       echo "</tr>";
@@ -42,14 +44,14 @@ class PluginWorkflowsWorkflow_tasktemplate extends CommonTreeDropdown {
       Html::autocompletionTextField($this, 'name', ['value' => $this->fields['name']]);
       echo "</td>";
       echo "</tr>";
-      echo "<tr class='needvalidation'>";
-      echo "<td>".__('Need Validation')." :</td>";
-      echo "<td align='center'>";
-      Html::showCheckbox(['name'    => 'needvalidation',
-      'value'   => '1',
-      'checked' => $this->fields["needvalidation"]]);
-      echo "</td>";
-      echo "</tr>";
+      // echo "<tr class='needvalidation'>";
+      // echo "<td>".__('Need Validation')." :</td>";
+      // echo "<td align='center'>";
+      // Html::showCheckbox(['name' => 'needvalidation',
+      // 'value'   => '1',
+      // 'checked' => $this->fields["needvalidation"]]);
+      // echo "</td>";
+      // echo "</tr>";
       $this->showFormButtons();
       $this->canCreateItem();
       return true;
@@ -65,85 +67,58 @@ class PluginWorkflowsWorkflow_tasktemplate extends CommonTreeDropdown {
          ];
    }
 
-   function sortByLevel($a, $b) {
-      $a = $a['level'];
-      $b = $b['level'];
-
-      if ($a == $b) {
+   static function sortByLevel($a, $b) {
+      if ($a['level'] == $b['level']) {
          return 0;
       }
-      return ($a < $b) ? -1 : 1;
+      return ($a['level'] < $b['level']) ? -1 : +1;
+   }
+
+   function composeWorkflowTree($parent_id, $flat_tasks) {
+      foreach ($flat_tasks[$parent_id] as $task) {
+         echo '<li>';
+         echo '<a href="#">'.$task['name'].'</a>';
+         if (isset($flat_tasks[$task['id']])) {
+            echo '<ul>';
+            $this->composeWorkflowTree($task['id'], $flat_tasks);
+            echo '</ul>';
+         }
+         echo '</li>';
+      }
    }
 
    function showTasksWorkflow($ID) {
       global $DB;
 
-      $tasktemplates = [];
-      $workflow = [];
-      $workflowquery = $DB->request("SELECT * FROM glpi_plugin_workflows_workflows_tasktemplates AS a
-                                     INNER JOIN glpi_plugin_workflows_workflows AS b
-                                     ON a.plugin_workflows_workflows_id=b.id WHERE b.id=$ID");
+   /*
+   * use https://codepen.io/joellesenne/pen/KGJkz
+   */
+   $pwWorkflow = new PluginWorkflowsWorkflow();
+   $pwWorkflow->getFromDB($ID);
 
-      $taskquery = $DB->request("SELECT * FROM glpi_plugin_workflows_workflows AS a
-                                 INNER JOIN glpi_plugin_workflows_workflows_tasktemplates AS b
-                                 ON a.id=b.plugin_workflows_workflows_id WHERE a.id=$ID");
-      foreach ($workflowquery as $id => $row) {
-         $workflow = $row;
-      }
+   $taskquery = $DB->request("SELECT * FROM glpi_plugin_workflows_workflows_tasktemplates
+       WHERE glpi_plugin_workflows_workflows_tasktemplates.plugin_workflows_workflows_id=$ID");
 
-      foreach ($taskquery as $id => $row) {
-         $tasktemplates[]= $row;
+   $flat_tasks = [];
+   foreach ($taskquery as $id => $row) {
+      if (!isset($flat_tasks[$row['plugin_workflows_workflows_tasktemplates_id']])) {
+         $flat_tasks[$row['plugin_workflows_workflows_tasktemplates_id']] = [];
       }
-      if (!empty($workflow)) {
-         usort($tasktemplates, 'sortByLevel');
-         $list = json_encode($tasktemplates);
-         echo "<div id=diagram>";
-         echo "</div>";
-         echo "<script>
-            var diagramdoc;
-            var nodes = '';
-            var connections = '';
-            var nocondconnections = '';
-            var nocondnodes = '\\nop=>operation: No Task';
-            var diagramstring = '';
-            $list.forEach(function(element,i){
-               if(element.level==1 && element.needvalidation==0){
-               nodes+='\\nop1=>operation: '+element.name;
-               connections+= '\\n\\nst->op1->';
-               if(i==$list.length-1){
-                  connections+='e';
-               }
-               }
-               if(element.level==1 && element.needvalidation==1) {
-                  nodes+='\\ncond=>condition: '+element.name + ' Yes or No?:>>http://www.google.com'+nocondnodes;
-                  connections+= '\\n\\nst->cond1(yes)->';
-                  nocondconnections+= '\\ncond1(no)->op->e';
-                  if(i==$list.length-1){
-                        connections+='e';
-                  }
-               }
-               if(element.level>1 && element.needvalidation==0){
-                  nodes+='\\nop'+i+'=>operation: '+element.name;
-                  connections+= 'op'+i+'->';
-                  if(i==$list.length-1){
-                        connections+='e';
-                  }
-               }
-               if(element.level>1 && element.needvalidation==1){
-                  i=i+1;
-                  nodes+='\\ncond'+i+'=>condition: '+element.name+ ' Yes or No?:>>http://www.google.com'+nocondnodes;
-                  nocondconnections+= '\\ncond'+i+'(no)->op->e';
-                  connections+= 'cond'+i+'(yes)->';
-               }
-               console.log(element.name + ' level? '+element.level+' need? '+element.needvalidation);
-               });
-            diagramstring = 'st=>start: $workflow[name]:>http://www.google.com[blank]'+nodes+'".
-            "\\ne=>end: Fin'+connections+nocondconnections;
-            console.log(diagramstring);
-            var diagram = flowchart.parse(diagramstring);
-            console.log(diagram);
-            diagram.drawSVG('diagram');
-            </script>";
-      }
+      $flat_tasks[$row['plugin_workflows_workflows_tasktemplates_id']][] = $row;
+   }
+
+   echo '<nav class="workflowdiagram">
+			<ul>
+            <li>
+               <a href="#">'.$pwWorkflow->getName().'</a>
+               <ul>
+         ';
+   $this->composeWorkflowTree(0, $flat_tasks);
+
+   echo '
+         </ul>
+      </li>
+   </ul>
+</nav>';
    }
 }

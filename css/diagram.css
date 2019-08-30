@@ -1,0 +1,121 @@
+.workflowdiagram *,
+.workflowdiagram *::before,
+.workflowdiagram *::after {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.workflowdiagram * {
+  position: relative;
+  margin: 0;
+  padding: 0;
+
+  border: 0 none;
+
+  -webkit-transition: all ease .4s;
+  -moz-transition: all ease .4s;
+    transition: all ease .4s;
+}
+
+.workflowdiagram h1 {
+  padding-top: 40px;
+    
+  color: #474747;
+  text-align: center;
+  font-size: 1.8rem;
+     
+    text-shadow: rgba(0,0,0,0.6) 1px 0, rgba(0,0,0,0.6) 1px 0, rgba(0,0,0,0.6) 0 1px, rgba(0,0,0,0.6) 0 1px;
+}
+
+.workflowdiagram {
+  margin: 20px auto;
+  width: 100%;
+  min-height: auto;
+}
+
+.workflowdiagram ul {
+  position: relative;
+  padding-top: 20px; 
+}
+
+.workflowdiagram li {
+  position: relative;
+  padding: 20px 3px 0 3px; 
+  float: left; 
+  
+  text-align: center;
+  list-style-type: none; 
+}
+
+.workflowdiagram li::before, .workflowdiagram li::after{
+  content: '';
+  position: absolute; 
+  top: 0; 
+  right: 50%;
+  width: 50%; 
+  height: 20px;
+  border-top: 1px solid #474747;
+}
+
+.workflowdiagram li::after{
+  left: 50%;
+  right: auto; 
+  
+  border-left: 1px solid #474747;
+}
+
+.workflowdiagram li:only-child::after, .workflowdiagram li:only-child::before {
+  content: '';
+  display: none;
+}
+
+.workflowdiagram li:only-child{ padding-top: 0;}
+.workflowdiagram li:first-child::before, .workflowdiagram li:last-child::after{
+  border: 0 none;
+}
+
+.workflowdiagram li:last-child::before{
+  border-right: 1px solid #474747;
+  border-radius: 0 5px 0 0;
+}
+
+.workflowdiagram li:first-child::after{
+    border-radius: 5px 0 0 0;
+}
+.workflowdiagram ul ul::before{
+  content: '';
+  position: absolute; top: 0; left: 50%;
+  border-left: 1px solid #474747;
+  width: 0; 
+  height: 20px;
+}
+
+.workflowdiagram li a{
+  display: inline-block;
+  padding: 10px 15px;
+  min-width: 200px;
+  
+  border-radius: 5px;
+  border: 1px solid #474747;
+  
+  text-decoration: none;
+  text-transform: uppercase;
+  color: #474747;
+  font-family: arial, verdana, tahoma;
+  font-size: 11px;
+}
+
+.workflowdiagram li a:hover, .workflowdiagram li a:hover+ul li a {
+  color: #000;
+  background: #c8e4f8;   
+  border: 1px solid #94a0b4;
+}
+
+.workflowdiagram li a:hover+ul li::after, 
+.workflowdiagram li a:hover+ul li::before, 
+.workflowdiagram li a:hover+ul::before, 
+.workflowdiagram li a:hover+ul ul::before{
+  content: '';
+  border-color: #94a0b4;
+}

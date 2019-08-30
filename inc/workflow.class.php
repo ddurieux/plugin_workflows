@@ -32,13 +32,13 @@ class PluginWorkflowsWorkflow extends CommonDBTM {
    static function displayTabContentForItem(\CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
 
       $tasktemplates = new PluginWorkflowsWorkflow_tasktemplate;
-      echo "<table>";
+      echo "<table style='width: 100%;vertical-align: top;'>";
       echo "<tr>";
+      echo "<td style='width: 400px;vertical-align: top;'>";
+      $tasktemplates->showForm('');
+      echo "</td>";
       echo "<td align='center'>";
       $tasktemplates->showTasksWorkflow($item->getID());
-      echo "</td>";
-      echo "<td>";
-      $tasktemplates->showForm($item->getID());
       echo "</td>";
       echo "</tr>";
       echo "</table>";

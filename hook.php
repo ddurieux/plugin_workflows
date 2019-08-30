@@ -38,6 +38,7 @@ function plugin_workflows_install() {
       $DB->query("CREATE TABLE `glpi_plugin_workflows_workflows` (
                  `id` int(11) NOT NULL AUTO_INCREMENT,
                  `entities_id` int(11) NOT NULL default '0',
+                 `is_recursive` tinyint(1) NOT NULL DEFAULT '0',
                  `name` varchar(255) NOT NULL,
                  PRIMARY KEY  (`id`),
                  KEY `entities_id` (`entities_id`)
@@ -49,14 +50,14 @@ function plugin_workflows_install() {
                  `name` varchar(255),
                  `level` int(11) NOT NULL,
                  `completename` text,
-                 `workflows_tasktemplates_id` int(11) NOT NULL default '0',
-                 `workflows_id` int(11) NOT NULL default '0',
+                 `plugin_workflows_workflows_tasktemplates_id` int(11) NOT NULL default '0',
+                 `plugin_workflows_workflows_id` int(11) NOT NULL default '0',
                  `tasktemplates_id` int(11) NOT NULL default '0',
-                 `isvalidated` bool default NOT NULL'0',
+                 `is_validated` int(11) NOT NULL default '0',
                  `needvalidation` bool,
                  PRIMARY KEY (`id`),
-                 KEY `plugin_workflows_workflows_tasktemplates_id` (`workflows_tasktemplates_id`),
-                 KEY `plugin_workflows_workflows_id` (`workflows_id`),
+                 KEY `plugin_workflows_workflows_tasktemplates_id` (`plugin_workflows_workflows_tasktemplates_id`),
+                 KEY `plugin_workflows_workflows_id` (`plugin_workflows_workflows_id`),
                  Key `tasktemplates_id` (`tasktemplates_id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;");
    }
@@ -64,10 +65,10 @@ function plugin_workflows_install() {
       $DB->query("CREATE TABLE `glpi_plugin_workflows_workflows_tickets` (
                  `id` int(11) NOT NULL AUTO_INCREMENT,
                  `tickets_id` int(11) NOT NULL default '0',
-                 `workflows_id` int(11) NOT NULL default '0',
+                 `plugin_workflows_workflows_id` int(11) NOT NULL default '0',
                  PRIMARY KEY  (`id`),
                  KEY `tickets_id` (`tickets_id`),
-                 KEY `plugin_workflows_workflows_id` (`workflows_id`)
+                 KEY `plugin_workflows_workflows_id` (`plugin_workflows_workflows_id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;");
    }
    if (!$DB->TableExists("glpi_plugin_workflows_workflows_tasktemplates_tickettasks")) {
@@ -77,7 +78,7 @@ function plugin_workflows_install() {
                  `plugin_workflows_workflows_tasktemplates_id` int(11) NOT NULL default '0',
                  PRIMARY KEY  (`id`),
                  KEY `tickettasks_id` (`tickettasks_id`),
-                 KEY `plugin_workflows_workflows_tasktemplates_id` (`tasktemplates_id`)
+                 KEY `plugin_workflows_workflows_tasktemplates_id` (`plugin_workflows_workflows_tasktemplates_id`)
                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;");
    }
    return true;
