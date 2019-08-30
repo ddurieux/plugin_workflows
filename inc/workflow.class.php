@@ -37,7 +37,7 @@ class PluginWorkflowsWorkflow extends CommonDBTM {
       echo "<td style='width: 400px;vertical-align: top;'>";
       $tasktemplates->showForm('');
       echo "</td>";
-      echo "<td align='center'>";
+      echo "<td align='center' style='padding-left: 30px;padding-bottom: 30px;'>";
       $tasktemplates->showTasksWorkflow($item->getID());
       echo "</td>";
       echo "</tr>";

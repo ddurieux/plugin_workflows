@@ -76,8 +76,14 @@ class PluginWorkflowsWorkflow_tasktemplate extends CommonTreeDropdown {
 
    function composeWorkflowTree($parent_id, $flat_tasks) {
       foreach ($flat_tasks[$parent_id] as $task) {
+         $delete_icon = '';
+         $url = "#";
+         if (!isset($flat_tasks[$task['id']])) {
+            $delete_icon = ' <i class="fas fa-times-circle"></i>';
+            $url = $this->getFormURL().'?purge=1&id='.$task['id'];
+         }
          echo '<li>';
-         echo '<a href="#">'.$task['name'].'</a>';
+         echo '<a href="'.$url.'">'.$task['name'].$delete_icon.'</a>';
          if (isset($flat_tasks[$task['id']])) {
             echo '<ul>';
             $this->composeWorkflowTree($task['id'], $flat_tasks);
