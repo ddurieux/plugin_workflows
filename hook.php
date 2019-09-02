@@ -26,6 +26,8 @@
  --------------------------------------------------------------------------
  */
 
+use tests\units\TicketTask;
+
 /**
  * Plugin install process
  *
@@ -99,11 +101,47 @@ function plugin_workflows_uninstall() {
    return true;
 }
 
-function plugin_workflows_update($ID) {
-   $task = new TicketTask();
-   $ticket = new PluginWorkflowsWorkflow_ticket();
-   $workflow = new PluginWorkflowsWorkflow();
+/**
+ * When update a tickettask, create the next one
+ */
+function plugin_workflows_update(\TicketTask $item) {
+   global $DB;
 
-   $task->getID();
+   if ($item->fields['state'] != Planning::DONE) {
+      return true;
+   }
+
+   $pwWorkflow_Ticket = new PluginWorkflowsWorkflow_ticket();
+   $pwWorkflow_Tasktemplate_Tickettask = new PluginWorkflowsWorkflow_Tasktemplate_Tickettask();
+   $taskTemplate = new TaskTemplate();
+   $ticketTask = new \TicketTask();
+
+   if ($pwWorkflow_Tasktemplate_Tickettask->getFromDBByCrit(['tickettasks_id' => $item->getID()])) {
+      // get the new tasks to create
+      $iterator = $DB->request([
+         'FROM'   => \PluginWorkflowsWorkflow_tasktemplate::getTable(),
+         'WHERE'  => [
+            'plugin_workflows_workflows_tasktemplates_id' => $pwWorkflow_Tasktemplate_Tickettask->fields['plugin_workflows_workflows_tasktemplates_id']
+         ]
+      ]);
+      while ($data = $iterator->next()) {
+         // check if task not yet added (can be the case if on older task updated)
+         if (!countElementsInTable(PluginWorkflowsWorkflow_Tasktemplate_Tickettask::getTable(), ['plugin_workflows_workflows_tasktemplates_id' => $data['id']])) {
+            $taskTemplate->getFromDB($data['tasktemplates_id']);
+            $tickettasks_id = $ticketTask->add([
+               'tickets_id'        =>  $item->fields['tickets_id'],
+               'tasktemplates_id'  =>  $taskTemplate->fields['id'],
+               'content'           =>  addslashes($taskTemplate->fields['content']),
+               'goups_id_tech'     =>  $taskTemplate->fields['groups_id_tech'],
+               'action_time'       =>  $taskTemplate->fields['actiontime'],
+               'taskcategories_id' =>  $taskTemplate->fields['taskcategories_id'],
+               'is_private'        =>  $taskTemplate->fields['is_private'],
+            ]);
+            $pwWorkflow_Tasktemplate_Tickettask->add([
+               'plugin_workflows_workflows_tasktemplates_id' => $data['id'],
+               'tickettasks_id' => $tickettasks_id
+            ]);
+         }
+      }
+   }
 }
-

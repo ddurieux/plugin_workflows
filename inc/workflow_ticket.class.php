@@ -22,29 +22,25 @@ class PluginWorkflowsWorkflow_ticket extends CommonDBRelation {
    const VALIDATION_GROUP = 2;
 
    static function displayTabContentForItem(\CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
-      $workflows = new PluginWorkflowsWorkflow_ticket;
-      echo "<table>";
-      echo "<tr>";
-      echo "<td>";
-      $workflows->showWorkflows($item->getID());
-      echo "</tr>";
-      echo "</td>";
-      if (!$workflows->getFromDBByCrit(['tickets_id' => $item->getID()])) {
-         echo "<tr>";
-         echo "<td>";
-         $workflows->showForm($item->getID());
-         echo "</tr>";
-         echo "</td>";
+      $pwWorkflow_Ticket = new PluginWorkflowsWorkflow_ticket;
+
+      if (!$pwWorkflow_Ticket->getFromDBByCrit(['tickets_id' => $_GET['id']])) {
+         $pwWorkflow_Ticket->showForm('');
+      } else {
+         $pwWorkflow_Ticket->showWorkflows($item->getID());
       }
-
-      echo "</table>";
-
       return true;
    }
 
    function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
       Ticket::getType();
-      return __('Workflows', 'workflows');
+
+      $nb = 0;
+      if ($_SESSION['glpishow_count_on_tabs']) {
+         $nb = countElementsInTable(self::getTable(),
+                                    ['tickets_id' => $item->getID()]);
+      }
+      return self::createTabEntry(__('Workflow', 'worflows'), $nb);
    }
 
    static function getTypeName($nb = 0) {
@@ -54,45 +50,40 @@ class PluginWorkflowsWorkflow_ticket extends CommonDBRelation {
    function showForm($ID, $options = []) {
       global $CFG_GLPI;
 
-      echo "<form name='add' method='post'
-      action='" . $CFG_GLPI['root_doc'] . "/plugins/workflows/front/workflow_ticket.form.php'>";
-      echo "<table>";
-      echo "<tr class='workflows'>";
-      echo "<td>" . __('Workflows') . " :</td>";
+      $this->initForm($ID, $options);
+      $this->showFormHeader($options);
+
+      echo "<tr class='tab_bg_1'>";
+      echo "<td>" . __('Workflow', 'workflows') . " :</td>";
       echo "<td>";
+      echo Html::hidden('tickets_id', ['value' => $_GET['id']]);
       PluginWorkflowsWorkflow::dropdown([
          'name'  => 'plugin_workflows_workflows_id',
          'value' => ($ID != 0) ? "plugin_workflows_workflows_id" : 0,
       ]);
       echo "</td>";
       echo "</tr>";
-      echo Html::hidden('tickets_id', ['value' => $ID]);
-      echo "<td>";
-      echo "<tr>";
-      echo Html::submit(_x('button', 'Add'),
-                           ['name'  => "add"]);
-      echo "</td>";
-      echo "</tr>";
-      echo "</table>";
-      Html::closeForm();
+
+      $this->showFormButtons($options);
+
+      return true;
    }
 
-   function showWorkflows($ID, $options = []) {
-      global $CFG_GLPI;
-      global $DB;
-      $workflow = new PluginWorkflowsWorkflow;
+   function showWorkflows($tickets_id, $options = []) {
+      global $CFG_GLPI, $DB;
+
       $ticketworkflows = [];
       $workflowsquery = $DB->request("SELECT * FROM glpi_plugin_workflows_workflows AS a
                                       INNER JOIN glpi_plugin_workflows_workflows_tickets AS b
-                                      ON a.id = b.plugin_workflows_workflows_id where b.tickets_id=$ID");
+                                      ON a.id = b.plugin_workflows_workflows_id where b.tickets_id=$tickets_id");
       foreach ($workflowsquery as $key => $value) {
          $ticketworkflows[] = $value;
       }
 
-      echo "<table>";
+      echo "<table class='tab_cadre_fixe'>";
       echo "<tr>";
-      echo "<th>";
-      echo "Ticket Worlflow";
+      echo "<th colspan='2'>";
+      echo "Ticket Workflow";
       echo "</th>";
       echo "</tr>";
       foreach ($ticketworkflows as $id => $row) {
@@ -110,41 +101,46 @@ class PluginWorkflowsWorkflow_ticket extends CommonDBRelation {
          echo "</tr>";
       }
       echo "</table>";
+
+      $pwWorkflow_Tasktemplate = new PluginWorkflowsWorkflow_tasktemplate();
+      $this->getFromDBByCrit(['tickets_id' => $tickets_id]);
+
+      echo "<table width='100%' class='table'>";
+      echo "   <tr>";
+      echo "      <td align='center'>";
+      $pwWorkflow_Tasktemplate->showTasksWorkflow($this->fields['plugin_workflows_workflows_id'], true, $tickets_id);
+      echo "      </td>";
+      echo "   </tr>";
+      echo "</table>";
    }
 
    function post_addItem() {
-      global $CFG_GLPI, $DB;
+      global $DB;
+
+      $ticketTask = new TicketTask();
+      $taskTemplate = new TaskTemplate();
+      $pwWorkflow_Tasktemplate_Tickettask = new PluginWorkflowsWorkflow_Tasktemplate_Tickettask();
+
       $workflowID = $this->fields['plugin_workflows_workflows_id'];
-      $tasktemplatesquery = $DB->request("SELECT * FROM glpi_plugin_workflows_workflows AS a
-                                          INNER JOIN glpi_plugin_workflows_workflows_tasktemplates AS b
-                                          ON a.id=b.plugin_workflows_workflows_id WHERE a.id=$workflowID");
 
-      $tasktemplatequeryresult = [];
-      $tasktemplates = [];
+      $tasktemplatesquery = $DB->request("SELECT * FROM glpi_plugin_workflows_workflows_tasktemplates 
+            WHERE plugin_workflows_workflows_id=$workflowID AND plugin_workflows_workflows_tasktemplates_id=0");
 
-      foreach ($tasktemplatesquery as $key => $value) {
-         $tasktemplatequeryresult[] = $value;
+      foreach ($tasktemplatesquery as $data) {
+         $taskTemplate->getFromDB($data['tasktemplates_id']);
+         $tickettasks_id = $ticketTask->add([
+            'tickets_id'        =>  $this->fields['tickets_id'],
+            'tasktemplates_id'  =>  $taskTemplate->fields['id'],
+            'content'           =>  addslashes($taskTemplate->fields['content']),
+            'goups_id_tech'     =>  $taskTemplate->fields['groups_id_tech'],
+            'action_time'       =>  $taskTemplate->fields['actiontime'],
+            'taskcategories_id' =>  $taskTemplate->fields['taskcategories_id'],
+            'is_private'        =>  $taskTemplate->fields['is_private'],
+         ]);
+         $pwWorkflow_Tasktemplate_Tickettask->add([
+            'plugin_workflows_workflows_tasktemplates_id' => $data['id'],
+            'tickettasks_id' => $tickettasks_id
+         ]);
       }
-      $task = new TicketTask;
-      $ttItem = new TaskTemplate;
-      foreach ($tasktemplatequeryresult as $key => $value) {
-         $tasktemplates[] = $value;
-      }
-      foreach ($tasktemplates as $index => $element) {
-         if ($ttItem->getFromDB($element['tasktemplates_id'])) {
-            if ($element['level'] == 1) {
-               $task->add([
-                  'tickets_id'        =>   $this->fields['tickets_id'],
-                  'tasktemplates_id'  =>   $element['tasktemplates_id'],
-                  'content'           =>   $ttItem->fields['content'],
-                  'goups_id_tech'     =>   $ttItem->fields['groups_id_tech'],
-                  'action_time'       =>   $ttItem->fields['actiontime'],
-                  'taskcategories_id' =>   $ttItem->fields['taskcategories_id'],
-                  'is_private'        =>   $ttItem->fields['is_private'],
-               ]);
-            }
-         }
-      }
-      $follow = new \ITILFollowup();
    }
 }

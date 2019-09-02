@@ -36,6 +36,7 @@ define('PLUGIN_WORKFLOWS_VERSION', '9.4+1.0');
  */
 function plugin_init_workflows() {
    global $PLUGIN_HOOKS;
+
    $plugin = new Plugin();
    $PLUGIN_HOOKS['csrf_compliant']['workflows'] = true;
 
@@ -53,6 +54,7 @@ function plugin_init_workflows() {
          ]
       ]
    );
+   Plugin::registerClass('PluginWorkflowsWorkflow_Tasktemplate_Tickettask');
 
    if ($plugin->isInstalled('workflows') && $plugin->isActivated('workflows')) {
       $PLUGIN_HOOKS["menu_toadd"]['workflows']['config'] ='PluginWorkflowsWorkflow';
