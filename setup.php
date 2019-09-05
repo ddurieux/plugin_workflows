@@ -63,8 +63,6 @@ function plugin_init_workflows() {
    $PLUGIN_HOOKS['use_rules']['workflows'] = ['RuleTicket'];
    $PLUGIN_HOOKS['rule_matched']['workflows'] = 'plugin_workflows_rulematched';
 
-
-
    if ($plugin->isInstalled('workflows') && $plugin->isActivated('workflows')) {
       $PLUGIN_HOOKS["menu_toadd"]['workflows']['config'] ='PluginWorkflowsWorkflow';
    }
