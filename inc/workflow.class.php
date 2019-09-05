@@ -31,7 +31,7 @@ class PluginWorkflowsWorkflow extends CommonDBTM {
 
    static function displayTabContentForItem(\CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
 
-      $tasktemplates = new PluginWorkflowsWorkflow_tasktemplate;
+      $tasktemplates = new PluginWorkflowsWorkflow_Tasktemplate();
       echo "<table style='width: 100%;vertical-align: top;'>";
       echo "<tr>";
       echo "<td style='width: 400px;vertical-align: top;'>";

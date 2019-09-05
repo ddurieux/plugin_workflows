@@ -45,16 +45,25 @@ function plugin_init_workflows() {
    ];
 
    $PLUGIN_HOOKS['item_update']['workflows'] = [
-      'TicketTask' => 'plugin_workflows_update'
+      'TicketTask' => 'plugin_workflows_update',
+   ];
+   $PLUGIN_HOOKS['item_add']['workflows'] = [
+      'Ticket' => 'plugin_workflows_add',
    ];
 
-   Plugin::registerClass('PluginWorkflowsWorkflow_ticket', [
+   Plugin::registerClass('PluginWorkflowsWorkflow_Ticket', [
       'addtabon' => [
          'Ticket'
          ]
       ]
    );
    Plugin::registerClass('PluginWorkflowsWorkflow_Tasktemplate_Tickettask');
+
+   // Rules
+   $PLUGIN_HOOKS['use_rules']['workflows'] = ['RuleTicket'];
+   $PLUGIN_HOOKS['rule_matched']['workflows'] = 'plugin_workflows_rulematched';
+
+
 
    if ($plugin->isInstalled('workflows') && $plugin->isActivated('workflows')) {
       $PLUGIN_HOOKS["menu_toadd"]['workflows']['config'] ='PluginWorkflowsWorkflow';

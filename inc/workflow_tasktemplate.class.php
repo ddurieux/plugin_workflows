@@ -1,12 +1,10 @@
 <?php
 
-use tests\units\TicketTask;
-
 if (!defined('GLPI_ROOT')) {
    die("Sorry. You can't access directly to this file");
 }
 
-class PluginWorkflowsWorkflow_tasktemplate extends CommonTreeDropdown {
+class PluginWorkflowsWorkflow_Tasktemplate extends CommonTreeDropdown {
 
    // From CommonDBTM
    public $dohistory          = true;
@@ -38,11 +36,12 @@ class PluginWorkflowsWorkflow_tasktemplate extends CommonTreeDropdown {
 
       echo "<tr>";
       echo "<td colspan='2'></td>";
-      echo "<td>".__('Parent of')." :</td>";
+      echo "<td>".__('Son of')." :</td>";
       echo "<td align='center'>";
-      PluginWorkflowsWorkflow_tasktemplate::dropdown([
+      PluginWorkflowsWorkflow_Tasktemplate::dropdown([
          'name'  => 'plugin_workflows_workflows_tasktemplates_id',
          'value' => $this->fields["plugin_workflows_workflows_tasktemplates_id"],
+         'condition' => ['plugin_workflows_workflows_id' => $_GET['id'] ]
       ]);
       echo "</td>";
       echo "</tr>";
@@ -126,7 +125,7 @@ class PluginWorkflowsWorkflow_tasktemplate extends CommonTreeDropdown {
       $tickettasks = [];
       if ($tickets_id > 0) {
          $iterator = $DB->request([
-            'FROM'   => \TicketTask::getTable(),
+            'FROM'   => TicketTask::getTable(),
             'WHERE'  => [
                'tickets_id' => $tickets_id
             ]

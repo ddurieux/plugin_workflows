@@ -2,7 +2,7 @@
 
 include ("../../../inc/includes.php");
 
-$dropdown = new PluginWorkflowsWorkflow_tasktemplate();
+$dropdown = new PluginWorkflowsWorkflow_Tasktemplate();
 
 use Glpi\Event;
 

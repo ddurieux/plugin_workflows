@@ -10,7 +10,7 @@ class PluginWorkflowsWorkflow_Tasktemplate_Tickettask extends CommonDBRelation {
    public $can_be_translated  = true;
    // From CommonDBRelation
 
-   static public $itemtype_2 = 'PluginWorkflowsWorkflow_tasktemplate';
+   static public $itemtype_2 = 'PluginWorkflowsWorkflow_Tasktemplate';
    static public $items_id_2 = 'plugin_workflows_workflows_tasktemplates_id';
    static public $itemtype_1 = 'Tickettask';
    static public $items_id_1 = 'tickettasks_id';

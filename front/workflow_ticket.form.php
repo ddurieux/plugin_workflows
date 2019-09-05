@@ -2,7 +2,7 @@
 
 include ("../../../inc/includes.php");
 
-$dropdown = new PluginWorkflowsWorkflow_ticket();
+$dropdown = new PluginWorkflowsWorkflow_Ticket();
 
 if (isset($_POST["delete"])) {
 

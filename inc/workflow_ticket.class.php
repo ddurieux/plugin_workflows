@@ -4,7 +4,7 @@ if (!defined('GLPI_ROOT')) {
    die("Sorry. You can't access directly to this file");
 }
 
-class PluginWorkflowsWorkflow_ticket extends CommonDBRelation {
+class PluginWorkflowsWorkflow_Ticket extends CommonDBRelation {
 
    static $doHistory = true;
    public $can_be_translated  = true;
@@ -22,7 +22,7 @@ class PluginWorkflowsWorkflow_ticket extends CommonDBRelation {
    const VALIDATION_GROUP = 2;
 
    static function displayTabContentForItem(\CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
-      $pwWorkflow_Ticket = new PluginWorkflowsWorkflow_ticket;
+      $pwWorkflow_Ticket = new PluginWorkflowsWorkflow_Ticket;
 
       if (!$pwWorkflow_Ticket->getFromDBByCrit(['tickets_id' => $_GET['id']])) {
          $pwWorkflow_Ticket->showForm('');
@@ -102,7 +102,7 @@ class PluginWorkflowsWorkflow_ticket extends CommonDBRelation {
       }
       echo "</table>";
 
-      $pwWorkflow_Tasktemplate = new PluginWorkflowsWorkflow_tasktemplate();
+      $pwWorkflow_Tasktemplate = new PluginWorkflowsWorkflow_Tasktemplate();
       $this->getFromDBByCrit(['tickets_id' => $tickets_id]);
 
       echo "<table width='100%' class='table'>";

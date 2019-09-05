@@ -26,7 +26,6 @@
  --------------------------------------------------------------------------
  */
 
-use tests\units\TicketTask;
 
 /**
  * Plugin install process
@@ -101,32 +100,60 @@ function plugin_workflows_uninstall() {
    return true;
 }
 
+function plugin_workflows_add(Ticket $item) {
+   Toolbox::logError($item);
+   if (isset($item->input['plugin_workflows_workflows_id'])) {
+      $pwWorkflow_Ticket = new PluginWorkflowsWorkflow_Ticket();
+      $pwWorkflow_Ticket->add([
+         'tickets_id'                    => $item->getID(),
+         'plugin_workflows_workflows_id' => $item->input['plugin_workflows_workflows_id']
+      ]);
+   }
+}
+
 /**
  * When update a tickettask, create the next one
  */
-function plugin_workflows_update(\TicketTask $item) {
+function plugin_workflows_update(TicketTask $item) {
    global $DB;
 
    if ($item->fields['state'] != Planning::DONE) {
       return true;
    }
 
-   $pwWorkflow_Ticket = new PluginWorkflowsWorkflow_ticket();
+   $pwWorkflow_Ticket = new PluginWorkflowsWorkflow_Ticket();
    $pwWorkflow_Tasktemplate_Tickettask = new PluginWorkflowsWorkflow_Tasktemplate_Tickettask();
    $taskTemplate = new TaskTemplate();
-   $ticketTask = new \TicketTask();
+   $ticketTask = new TicketTask();
 
    if ($pwWorkflow_Tasktemplate_Tickettask->getFromDBByCrit(['tickettasks_id' => $item->getID()])) {
       // get the new tasks to create
       $iterator = $DB->request([
-         'FROM'   => \PluginWorkflowsWorkflow_tasktemplate::getTable(),
+         'FROM'   => PluginWorkflowsWorkflow_Tasktemplate::getTable(),
          'WHERE'  => [
             'plugin_workflows_workflows_tasktemplates_id' => $pwWorkflow_Tasktemplate_Tickettask->fields['plugin_workflows_workflows_tasktemplates_id']
          ]
       ]);
+
       while ($data = $iterator->next()) {
          // check if task not yet added (can be the case if on older task updated)
-         if (!countElementsInTable(PluginWorkflowsWorkflow_Tasktemplate_Tickettask::getTable(), ['plugin_workflows_workflows_tasktemplates_id' => $data['id']])) {
+         $iterator2 = $DB->request([
+            'FROM' => PluginWorkflowsWorkflow_Tasktemplate_Tickettask::getTable(),
+            'LEFT JOIN' => [
+               'glpi_tickettasks' => [
+                  'FKEY' => [
+                     'glpi_tickettasks' => 'id',
+                     PluginWorkflowsWorkflow_Tasktemplate_Tickettask::getTable() => 'tickettasks_id'
+                  ]
+               ]
+            ],
+            'WHERE' => [
+               'plugin_workflows_workflows_tasktemplates_id' => $data['id'],
+               'glpi_tickettasks.tickets_id' => $item->fields['tickets_id']
+            ]
+         ]);
+         if ($iterator2->count() == 0) {
+
             $taskTemplate->getFromDB($data['tasktemplates_id']);
             $tickettasks_id = $ticketTask->add([
                'tickets_id'        =>  $item->fields['tickets_id'],
@@ -144,4 +171,21 @@ function plugin_workflows_update(\TicketTask $item) {
          }
       }
    }
+}
+
+function plugin_workflows_getRuleActions($params = []) {
+   $actions = [];
+
+   switch ($params['rule_itemtype']) {
+
+      case "RuleTicket":
+         $actions['plugin_workflows_workflows_id'] = [
+            'name'  => 'Worflow (tâches)',
+            'type'  => 'dropdown',
+            'table' => PluginWorkflowsWorkflow::getTable()
+         ];
+         break;
+   }
+
+   return $actions;
 }
