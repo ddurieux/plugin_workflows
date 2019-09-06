@@ -45,7 +45,8 @@ function plugin_init_workflows() {
    ];
 
    $PLUGIN_HOOKS['item_update']['workflows'] = [
-      'TicketTask' => 'plugin_workflows_update',
+      'TicketTask' => 'plugin_workflows_update_tickettask',
+      'Ticket'     => 'plugin_workflows_update_ticket'
    ];
    $PLUGIN_HOOKS['item_add']['workflows'] = [
       'Ticket' => 'plugin_workflows_add',

@@ -127,16 +127,7 @@ class PluginWorkflowsWorkflow_Ticket extends CommonDBRelation {
             WHERE plugin_workflows_workflows_id=$workflowID AND plugin_workflows_workflows_tasktemplates_id=0");
 
       foreach ($tasktemplatesquery as $data) {
-         $taskTemplate->getFromDB($data['tasktemplates_id']);
-         $tickettasks_id = $ticketTask->add([
-            'tickets_id'        =>  $this->fields['tickets_id'],
-            'tasktemplates_id'  =>  $taskTemplate->fields['id'],
-            'content'           =>  addslashes($taskTemplate->fields['content']),
-            'goups_id_tech'     =>  $taskTemplate->fields['groups_id_tech'],
-            'action_time'       =>  $taskTemplate->fields['actiontime'],
-            'taskcategories_id' =>  $taskTemplate->fields['taskcategories_id'],
-            'is_private'        =>  $taskTemplate->fields['is_private'],
-         ]);
+         $tickettasks_id = PluginWorkflowsWorkflow_Tasktemplate::createTaskFromTemplate($data['tasktemplates_id'], $this->fields['tickets_id'], true);
          $pwWorkflow_Tasktemplate_Tickettask->add([
             'plugin_workflows_workflows_tasktemplates_id' => $data['id'],
             'tickettasks_id' => $tickettasks_id

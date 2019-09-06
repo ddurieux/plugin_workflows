@@ -160,4 +160,28 @@ class PluginWorkflowsWorkflow_Tasktemplate extends CommonTreeDropdown {
    </table>
 </nav>';
    }
+
+   static function createTaskFromTemplate($tasktemplates_id, $tickets_id, $state_todo = false) {
+      $ticketTask = new TicketTask();
+      $taskTemplate = new TaskTemplate();
+
+      $taskTemplate->getFromDB($tasktemplates_id);
+      $state = $taskTemplate->fields['state'];
+      if ($state_todo) {
+         $state = Planning::TODO;
+      }
+
+      $tickettasks_id = $ticketTask->add([
+         'tickets_id'        => $tickets_id,
+         'taskcategories_id' => $taskTemplate->fields['taskcategories_id'],
+         'content'           => addslashes($taskTemplate->fields['content']),
+         'is_private'        => $taskTemplate->fields['is_private'],
+         'actiontime'        => $taskTemplate->fields['actiontime'],
+         'state'             => $state,
+         'users_id_tech'     => $taskTemplate->fields['users_id_tech'],
+         'groups_id_tech'    => $taskTemplate->fields['groups_id_tech'],
+         'tasktemplates_id'  => $taskTemplate->fields['id'],
+      ]);
+      return $tickettasks_id;
+   }
 }
