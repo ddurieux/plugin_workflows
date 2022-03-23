@@ -1,7 +1,7 @@
 <?php
 
 if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
+   die("Sorry. You can't access directly to this file");
 }
 
 class PluginWorkflowsWorkflow_Tasktemplate extends CommonTreeDropdown {
@@ -9,311 +9,179 @@ class PluginWorkflowsWorkflow_Tasktemplate extends CommonTreeDropdown {
    // From CommonDBTM
    public $dohistory          = true;
    public $can_be_translated  = true;
+   static $rightname          = 'computer';
 
-   static $rightname          = 'Computer';
+   static function getTypeName($nb = 0) {
+      return _n('Tasks Workflow', 'Tasks Workflows', $nb, 'workflow');
+   }
 
+
+   function showForm($ID, $options = []) {
+
+      $this->initForm($ID);
+      $this->showFormHeader();
+      echo Html::hidden('plugin_workflows_workflows_id',
+                        ['value' => $_GET['id']]);
+
+      echo "<tr>";
+      echo "<td>".__('Name')." :</td>";
+      echo "<td align='center'>";
+      Html::autocompletionTextField($this, 'name', ['value' => $this->fields['name']]);
+      echo "</td>";
+      echo "<td>"._n('Task template', 'Task templates', 1)." :</td>";
+      echo "<td align='center'>";
+      Dropdown::show('Tasktemplate');
+      echo "</td>";
+      echo "</tr>";
+
+      echo "<tr>";
+      echo "<td colspan='2'></td>";
+      echo "<td>".__('Son of')." :</td>";
+      echo "<td align='center'>";
+      PluginWorkflowsWorkflow_Tasktemplate::dropdown([
+         'name'  => 'plugin_workflows_workflows_tasktemplates_id',
+         'value' => $this->fields["plugin_workflows_workflows_tasktemplates_id"],
+         'condition' => ['plugin_workflows_workflows_id' => $_GET['id'] ]
+      ]);
+      echo "</td>";
+      echo "</tr>";
+      // echo "<tr class='needvalidation'>";
+      // echo "<td>".__('Need Validation')." :</td>";
+      // echo "<td align='center'>";
+      // Html::showCheckbox(['name' => 'needvalidation',
+      // 'value'   => '1',
+      // 'checked' => $this->fields["needvalidation"]]);
+      // echo "</td>";
+      // echo "</tr>";
+      $this->showFormButtons();
+      $this->canCreateItem();
+      return true;
+   }
 
    function getAdditionalFields() {
+      return [
+         [
+            'name'  => 'name',
+            'label' => __('Name'),
+            'type'  => 'textarea',
+            'rows' => 10],
+         ];
+   }
 
-    $tab = [['name'      => $this->getForeignKeyField(),
-                       'label'     => __('As child of'),
-                       'type'      => 'parent',
-                       'list'      => false],
-                 ['name'      => 'users_id',
-                       'label'     => __('Technician in charge of the hardware'),
-                       'type'      => 'UserDropdown',
-                       'right'     => 'own_ticket',
-                       'list'      => true],
-                 ['name'      => 'groups_id',
-                       'label'     => __('Group in charge of the hardware'),
-                       'type'      => 'dropdownValue',
-                       'condition' => ['is_assign' => 1],
-                       'list'      => true],
-                 ['name'      => 'knowbaseitemcategories_id',
-                       'label'     => __('Knowledge base'),
-                       'type'      => 'dropdownValue',
-                       'list'      => true],
-                 ['name'      => 'is_helpdeskvisible',
-                       'label'     => __('Visible in the simplified interface'),
-                       'type'      => 'bool',
-                       'list'      => true],
-                 ['name'      => 'is_incident',
-                       'label'     => __('Visible for an incident'),
-                       'type'      => 'bool',
-                       'list'      => true],
-                 ['name'      => 'is_request',
-                       'label'     => __('Visible for a request'),
-                       'type'      => 'bool',
-                       'list'      => true],
-                 ['name'      => 'is_problem',
-                       'label'     => __('Visible for a problem'),
-                       'type'      => 'bool',
-                       'list'      => true],
-                 ['name'      => 'is_change',
-                       'label'     => __('Visible for a change'),
-                       'type'      => 'bool',
-                       'list'      => true],
-                 ['name'      => 'tickettemplates_id_demand',
-                       'label'     => __('Template for a request'),
-                       'type'      => 'dropdownValue',
-                       'list'      => true],
-                 ['name'      => 'tickettemplates_id_incident',
-                       'label'     => __('Template for an incident'),
-                       'type'      => 'dropdownValue',
-                       'list'      => true],
-                ];
+   static function sortByLevel($a, $b) {
+      if ($a['level'] == $b['level']) {
+         return 0;
+      }
+      return ($a['level'] < $b['level']) ? -1 : +1;
+   }
 
-    if (!Session::haveRightsOr('problem', [CREATE, UPDATE, DELETE,
-                                                Problem::READALL, Problem::READMY])) {
+   function composeWorkflowTree($parent_id, $flat_tasks, $display_only, $tickets_id, $tickettasks) {
+      foreach ($flat_tasks[$parent_id] as $task) {
+         $delete_icon = '';
+         $url = "#";
+         if (!$display_only && !isset($flat_tasks[$task['id']])) {
+            $delete_icon = ' <i class="fas fa-times-circle"></i>';
+            $url = $this->getFormURL().'?purge=1&id='.$task['id'];
+         }
+         $css_green = '';
+         if ($tickets_id > 0
+               && countElementsInTable(PluginWorkflowsWorkflow_Tasktemplate_Tickettask::getTable(),
+                                       ['plugin_workflows_workflows_tasktemplates_id' => $task['id'], 'tickettasks_id' => $tickettasks])) {
+            // TODO faire requete avec jointure
+            $css_green = 'class="workflowdiagramgreen"';
+         }
 
-       unset($tab[7]);
-    }
-    return $tab;
+         echo '<li>';
+         echo '<a href="'.$url.'" '.$css_green.'>'.$task['name'].$delete_icon.'</a>';
+         if (isset($flat_tasks[$task['id']])) {
+            echo '<ul>';
+            $this->composeWorkflowTree($task['id'], $flat_tasks, $display_only, $tickets_id, $tickettasks);
+            echo '</ul>';
+         }
+         echo '</li>';
+      }
+   }
 
- }
+   function showTasksWorkflow($ID, $display_only = false, $tickets_id = 0) {
+      global $DB;
 
+      /*
+      * use https://codepen.io/joellesenne/pen/KGJkz
+      */
+      $pwWorkflow = new PluginWorkflowsWorkflow();
+      $pwWorkflow->getFromDB($ID);
 
- function rawSearchOptions() {
-    $tab                       = parent::rawSearchOptions();
+      $taskquery = $DB->request("SELECT * FROM glpi_plugin_workflows_workflows_tasktemplates
+         WHERE glpi_plugin_workflows_workflows_tasktemplates.plugin_workflows_workflows_id=$ID");
 
-    $tab[] = [
-       'id'                 => '70',
-       'table'              => 'glpi_users',
-       'field'              => 'name',
-       'name'               => __('Technician in charge of the hardware'),
-       'datatype'           => 'dropdown',
-       'right'              => 'own_ticket'
-    ];
+      $flat_tasks = [];
+      foreach ($taskquery as $id => $row) {
+         if (!isset($flat_tasks[$row['plugin_workflows_workflows_tasktemplates_id']])) {
+            $flat_tasks[$row['plugin_workflows_workflows_tasktemplates_id']] = [];
+         }
+         $flat_tasks[$row['plugin_workflows_workflows_tasktemplates_id']][] = $row;
+      }
 
-    $tab[] = [
-       'id'                 => '71',
-       'table'              => 'glpi_groups',
-       'field'              => 'completename',
-       'name'               => __('Group'),
-       'datatype'           => 'dropdown'
-    ];
+      $tickettasks = [];
+      if ($tickets_id > 0) {
+         $iterator = $DB->request([
+            'FROM'   => TicketTask::getTable(),
+            'WHERE'  => [
+               'tickets_id' => $tickets_id
+            ]
+         ]);
+         while ($data = $iterator->next()) {
+            $tickettasks[] = $data['id'];
+         }
+      }
 
-    $tab[] = [
-       'id'                 => '72',
-       'table'              => 'glpi_tickettemplates',
-       'field'              => 'name',
-       'linkfield'          => 'tickettemplates_id_demand',
-       'name'               => __('Template for a request'),
-       'datatype'           => 'dropdown'
-    ];
+      $css_green = '';
+      if ($tickets_id > 0) {
+         $css_green = 'class="workflowdiagramgreen"';
+      }
 
-    $tab[] = [
-       'id'                 => '73',
-       'table'              => 'glpi_tickettemplates',
-       'field'              => 'name',
-       'linkfield'          => 'tickettemplates_id_incident',
-       'name'               => __('Template for an incident'),
-       'datatype'           => 'dropdown'
-    ];
+      echo '<nav class="workflowdiagram">
+         <table>
+            <tr>
+               <td>
+                  <ul>
+                     <li>
+                        <a href="#" '.$css_green.'>'.$pwWorkflow->getName().'</a>
+                        <ul>
+            ';
+      $this->composeWorkflowTree(0, $flat_tasks, $display_only, $tickets_id, $tickettasks);
 
-    $tab[] = [
-       'id'                 => '74',
-       'table'              => $this->getTable(),
-       'field'              => 'is_incident',
-       'name'               => __('Visible for an incident'),
-       'datatype'           => 'bool'
-    ];
+      echo '
+                  </ul>
+               </li>
+            </ul>
+         </td>
+      </tr>
+   </table>
+</nav>';
+   }
 
-    $tab[] = [
-       'id'                 => '75',
-       'table'              => $this->getTable(),
-       'field'              => 'is_request',
-       'name'               => __('Visible for a request'),
-       'datatype'           => 'bool'
-    ];
+   static function createTaskFromTemplate($tasktemplates_id, $tickets_id, $state_todo = false) {
+      $ticketTask = new TicketTask();
+      $taskTemplate = new TaskTemplate();
 
-    $tab[] = [
-       'id'                 => '76',
-       'table'              => $this->getTable(),
-       'field'              => 'is_problem',
-       'name'               => __('Visible for a problem'),
-       'datatype'           => 'bool'
-    ];
+      $taskTemplate->getFromDB($tasktemplates_id);
+      $state = $taskTemplate->fields['state'];
+      if ($state_todo) {
+         $state = Planning::TODO;
+      }
 
-    $tab[] = [
-       'id'                 => '85',
-       'table'              => $this->getTable(),
-       'field'              => 'is_change',
-       'name'               => __('Visible for a change'),
-       'datatype'           => 'bool'
-    ];
-
-    $tab[] = [
-       'id'                 => '3',
-       'table'              => $this->getTable(),
-       'field'              => 'is_helpdeskvisible',
-       'name'               => __('Visible in the simplified interface'),
-       'datatype'           => 'bool'
-    ];
-
-    $tab[] = [
-       'id'                 => '77',
-       'table'              => 'glpi_tickets',
-       'field'              => 'id',
-       'name'               => _x('quantity', 'Number of tickets'),
-       'datatype'           => 'count',
-       'forcegroupby'       => true,
-       'massiveaction'      => false,
-       'joinparams'         => [
-          'jointype'           => 'child'
-       ]
-    ];
-
-    $tab[] = [
-       'id'                 => '78',
-       'table'              => 'glpi_problems',
-       'field'              => 'id',
-       'name'               => _x('quantity', 'Number of problems'),
-       'datatype'           => 'count',
-       'forcegroupby'       => true,
-       'massiveaction'      => false,
-       'joinparams'         => [
-          'jointype'           => 'child'
-       ]
-    ];
-
-    $tab[] = [
-       'id'                 => '98',
-       'table'              => 'glpi_changes',
-       'field'              => 'id',
-       'name'               => _x('quantity', 'Number of changes'),
-       'datatype'           => 'count',
-       'forcegroupby'       => true,
-       'massiveaction'      => false,
-       'joinparams'         => [
-          'jointype'           => 'child'
-       ]
-    ];
-
-    $tab[] = [
-       'id'                 => '79',
-       'table'              => 'glpi_knowbaseitemcategories',
-       'field'              => 'completename',
-       'name'               => __('Knowledge base'),
-       'datatype'           => 'dropdown'
-    ];
-
-    return $tab;
- }
-
-
- static function getTypeName($nb = 0) {
-    return _n('Task Workflow', 'Task Workflow', $nb);
- }
-
-
-
- function cleanDBonPurge() {
-    Rule::cleanForItemCriteria($this);
- }
-
-
- /**
-  * @since 0.84
-  *
-  * @param $item         CommonGLPI object
-  * @param $withtemplate (default 0)
- **/
- function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
-
-    if (Session::haveRight(self::$rightname, READ)) {
-       switch ($item->getType()) {
-          case 'TaskWorkflow' :
-             $ong[1] = $this->getTypeName(Session::getPluralNumber());
-             return $ong;
-       }
-    }
-    return parent::getTabNameForItem($item, $withtemplate);
- }
-
-
- static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
-
-    if ($item->getType() == 'TaskWorkflow') {
-       self::showForTicketTemplate($item, $withtemplate);
-    }
-    return parent::displayTabContentForItem($item, $tabnum, $withtemplate);
- }
-
-
- /**
-  * @param $tt           TicketTemplate object
-  * @param $withtemplate (default 0)
- **/
- static function showForTicketTemplate(TicketTemplate $tt, $withtemplate = 0) {
-    global $DB, $CFG_GLPI;
-
-    $itilcategory = new self();
-    $ID           = $tt->fields['id'];
-
-    if (!$tt->getFromDB($ID)
-        || !$tt->can($ID, READ)) {
-       return false;
-    }
-    $ttm  = new self();
-    $rand = mt_rand();
-
-    echo "<div class='center'>";
-
-    $iterator = $DB->request([
-       'FROM'   => 'glpi_itilcategories',
-       'WHERE'  => [
-          'OR' => [
-             'tickettemplates_id_incident' => $ID,
-             'tickettemplates_id_demand'   => $ID
-          ]
-       ],
-       'ORDER'  => 'name'
-    ]);
-
-    echo "<table class='tab_cadre_fixe'>";
-    echo "<tr><th colspan='3'>";
-    $itilcategory_type = $itilcategory->getType();
-    echo "<a href='".$itilcategory_type::getSearchURL()."'>";
-    echo self::getTypeName(count($iterator));
-    echo "</a>";
-    echo "</th></tr>";
-    $used_incident = [];
-    $used_demand   = [];
-    if (count($iterator)) {
-       echo "<th>".__('Name')."</th>";
-       echo "<th>".__('Incident')."</th>";
-       echo "<th>".__('Request')."</th>";
-       echo "</tr>";
-
-       while ($data = $iterator->next()) {
-          echo "<tr class='tab_bg_2'>";
-          $itilcategory->getFromDB($data['id']);
-          echo "<td>".$itilcategory->getLink(['comments' => true])."</td>";
-          if ($data['tickettemplates_id_incident'] == $ID) {
-             echo "<td class='center'>
-                   <img src='".$CFG_GLPI["root_doc"]."/pics/ok.png' alt=\"".__('OK').
-                      "\" width='14' height='14'>
-                   </td>";
-             $used_incident[] = $data["id"];
-          } else {
-             echo "<td>&nbsp;</td>";
-          }
-          if ($data['tickettemplates_id_demand'] == $ID) {
-             echo "<td class='center'>
-                   <img src='".$CFG_GLPI["root_doc"]."/pics/ok.png' alt=\"".__('OK').
-                      "\" width='14' height='14'>
-                   </td>";
-             $used_demand[] = $data["id"];
-          } else {
-             echo "<td>&nbsp;</td>";
-          }
-       }
-
-    } else {
-       echo "<tr><th colspan='3'>".__('No item found')."</th></tr>";
-    }
-
-    echo "</table></div>";
- }
+      $tickettasks_id = $ticketTask->add([
+         'tickets_id'        => $tickets_id,
+         'taskcategories_id' => $taskTemplate->fields['taskcategories_id'],
+         'content'           => addslashes($taskTemplate->fields['content']),
+         'is_private'        => $taskTemplate->fields['is_private'],
+         'actiontime'        => $taskTemplate->fields['actiontime'],
+         'state'             => $state,
+         'users_id_tech'     => $taskTemplate->fields['users_id_tech'],
+         'groups_id_tech'    => $taskTemplate->fields['groups_id_tech'],
+         'tasktemplates_id'  => $taskTemplate->fields['id'],
+      ]);
+      return $tickettasks_id;
+   }
 }

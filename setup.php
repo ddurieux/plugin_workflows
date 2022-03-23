@@ -26,7 +26,7 @@
  --------------------------------------------------------------------------
  */
 
-define('PLUGIN_WORKFLOWS_VERSION', '0.0.1');
+define('PLUGIN_WORKFLOWS_VERSION', '9.4+1.0');
 
 /**
  * Init hooks of the plugin.
@@ -36,8 +36,34 @@ define('PLUGIN_WORKFLOWS_VERSION', '0.0.1');
  */
 function plugin_init_workflows() {
    global $PLUGIN_HOOKS;
+
    $plugin = new Plugin();
    $PLUGIN_HOOKS['csrf_compliant']['workflows'] = true;
+
+   $PLUGIN_HOOKS['add_css']['workflows'] = [
+      "css/diagram.css"
+   ];
+
+   $PLUGIN_HOOKS['item_update']['workflows'] = [
+      'TicketTask' => 'plugin_workflows_update_tickettask',
+      'Ticket'     => 'plugin_workflows_update_ticket'
+   ];
+   $PLUGIN_HOOKS['item_add']['workflows'] = [
+      'Ticket' => 'plugin_workflows_add',
+   ];
+
+   Plugin::registerClass('PluginWorkflowsWorkflow_Ticket', [
+      'addtabon' => [
+         'Ticket'
+         ]
+      ]
+   );
+   Plugin::registerClass('PluginWorkflowsWorkflow_Tasktemplate_Tickettask');
+
+   // Rules
+   $PLUGIN_HOOKS['use_rules']['workflows'] = ['RuleTicket'];
+   $PLUGIN_HOOKS['rule_matched']['workflows'] = 'plugin_workflows_rulematched';
+
    if ($plugin->isInstalled('workflows') && $plugin->isActivated('workflows')) {
       $PLUGIN_HOOKS["menu_toadd"]['workflows']['config'] ='PluginWorkflowsWorkflow';
    }
@@ -54,12 +80,13 @@ function plugin_version_workflows() {
    return [
       'name'           => 'workflows',
       'version'        => PLUGIN_WORKFLOWS_VERSION,
-      'author'         => 'Jessica DUDON',
+      'author'         => 'Jessica DUDON && David DURIEUX',
       'license'        => '',
       'homepage'       => '',
       'requirements'   => [
          'glpi' => [
-            'min' => '9.3',
+            'min' => '9.4',
+            'max' => '9.5'
          ]
       ]
    ];
@@ -73,10 +100,9 @@ function plugin_version_workflows() {
  */
 function plugin_workflows_check_prerequisites() {
 
-   //Version check is not done by core in GLPI < 9.2 but has to be delegated to core in GLPI >= 9.2.
    $version = preg_replace('/^((\d+\.?)+).*$/', '$1', GLPI_VERSION);
-   if (version_compare($version, '9.2', '<')) {
-      echo "This plugin requires GLPI >= 9.2";
+   if (version_compare($version, '9.4', '<')) {
+      echo "This plugin requires GLPI >= 9.4";
       return false;
    }
    return true;

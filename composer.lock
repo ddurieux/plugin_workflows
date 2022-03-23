@@ -411,9 +411,7 @@
             ],
             "authors": [
                 {
-                    "name": "jESSICA DUDON",
-                    "email": "glpi@teclib.com",
-                    "homepage": "https://teclib.com"
+                    "name": "JESSICA DUDON"
                 }
             ],
             "description": "GLPI PHP CodeSniffer Coding Standard",
@@ -461,9 +459,7 @@
             ],
             "authors": [
                 {
-                    "name": "Jessica DUDON",
-                    "email": "glpi@teclib.com",
-                    "homepage": "http://teclib-group.com"
+                    "name": "Jessica DUDON"
                 }
             ],
             "description": "Various tools for GLPI and its plugins",
