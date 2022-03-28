@@ -26,7 +26,7 @@
  --------------------------------------------------------------------------
  */
 
-define('PLUGIN_WORKFLOWS_VERSION', '9.4+1.0');
+define('PLUGIN_WORKFLOWS_VERSION', '9.5+1.0');
 
 /**
  * Init hooks of the plugin.
@@ -85,8 +85,8 @@ function plugin_version_workflows() {
       'homepage'       => '',
       'requirements'   => [
          'glpi' => [
-            'min' => '9.4',
-            'max' => '9.5'
+            'min' => '9.5',
+            'max' => '9.9'
          ]
       ]
    ];
@@ -101,8 +101,8 @@ function plugin_version_workflows() {
 function plugin_workflows_check_prerequisites() {
 
    $version = preg_replace('/^((\d+\.?)+).*$/', '$1', GLPI_VERSION);
-   if (version_compare($version, '9.4', '<')) {
-      echo "This plugin requires GLPI >= 9.4";
+   if (version_compare($version, '9.5', '<')) {
+      echo "This plugin requires GLPI >= 9.5";
       return false;
    }
    return true;

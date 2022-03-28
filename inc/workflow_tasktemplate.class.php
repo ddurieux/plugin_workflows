@@ -26,7 +26,7 @@ class PluginWorkflowsWorkflow_Tasktemplate extends CommonTreeDropdown {
       echo "<tr>";
       echo "<td>".__('Name')." :</td>";
       echo "<td align='center'>";
-      Html::autocompletionTextField($this, 'name', ['value' => $this->fields['name']]);
+      Html::autocompletionTextField($this, 'name', ['value' => $this->fields['name'], 'required' => true]);
       echo "</td>";
       echo "<td>"._n('Task template', 'Task templates', 1)." :</td>";
       echo "<td align='center'>";
